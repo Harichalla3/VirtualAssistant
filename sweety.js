@@ -1,21 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const userInput = document.getElementById('user-input');
-    const sendBtn = document.getElementById('send-btn');
+    const voiceBtn = document.getElementById('voice-btn');
     const chatLog = document.getElementById('chat-log');
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
 
-    sendBtn.addEventListener('click', () => {
-        const message = userInput.value.trim();
-        if (message) {
-            appendMessage('user', message);
-            fetchBotResponse(message);
-            userInput.value = '';
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    voiceBtn.addEventListener('click', () => {
+        recognition.start();
+    });
+
+    recognition.addEventListener('result', (e) => {
+        const transcript = Array.from(e.results)
+            .map(result => result[0])
+            .map(result => result.transcript)
+            .join('');
+
+        if (transcript) {
+            appendMessage('user', transcript);
+            fetchBotResponse(transcript);
         }
     });
 
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            sendBtn.click();
-        }
+    recognition.addEventListener('end', () => {
+        console.log('Recognition ended');
     });
 
     function appendMessage(sender, text) {
